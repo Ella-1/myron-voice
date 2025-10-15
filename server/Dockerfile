@@ -1,5 +1,5 @@
 # Use a common, stable base image with Python
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 # 1. Install System Dependencies (Crucial: FFmpeg for audio processing)
 # We use apt-get to install the necessary library on the Linux base.
