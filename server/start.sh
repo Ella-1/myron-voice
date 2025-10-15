@@ -1,7 +1,12 @@
 #!/bin/bash
 
-# Start the Gunicorn WSGI server. 
-# This command tells Gunicorn to look inside 'app.py' for a Flask instance named 'app'.
-# The --bind 0.0.0.0:$PORT ensures it listens on the correct address and port provided by the hosting environment.
-# The --workers parameter should be adjusted based on the available CPU cores.
-exec gunicorn --bind 0.0.0.0:$PORT --workers 1 app:app
+# Ensure gunicorn is found by running it as a Python module.
+# This prevents 'gunicorn: not found' errors in deployment environments.
+
+# WHISPER_MODEL and SOURCE_LANGUAGE are assumed to be set in Railway environment variables.
+
+# Gunicorn setup:
+# - 'app:app' means run the Flask app instance named 'app' located in the 'app.py' file.
+# - '-w 2' sets the number of worker processes (2 is a good starting point).
+# - '-b 0.0.0.0:$PORT' binds the server to the IP 0.0.0.0 and the port provided by Railway.
+exec python -m gunicorn app:app -w 2 -b 0.0.0.0:$PORT
