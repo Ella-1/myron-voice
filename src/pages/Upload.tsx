@@ -44,7 +44,7 @@ const Upload = () => {
 
     try {
         // 2. Send the POST request to the Flask API
-        const response = await fetch('http://localhost:5000/api/transcribe', {
+        const response = await fetch('https://myron-voice-production.up.railway.app/api/transcribe', {
             method: 'POST',
             body: formData,
         });
