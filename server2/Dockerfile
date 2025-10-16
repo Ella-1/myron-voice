@@ -1,47 +1,30 @@
-# --- STAGE 1: Build & Dependencies ---
-# Using a specific slim image for stability and a small footprint
-FROM python:3.11-slim as builder
+# --- Stage 1: Build Dependencies ---
+FROM python:3.11-slim AS builder
 
-# Set environment variables
 ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 
-# Create and set the working directory for all subsequent commands
 WORKDIR /app
 
-# Copy the requirements file
 COPY requirements.txt .
 
-# Install dependencies. This includes uvicorn, fastapi, whisper, etc.
+RUN apt-get update && apt-get install -y ffmpeg libsndfile1 && rm -rf /var/lib/apt/lists/*
 RUN pip install --no-cache-dir -r requirements.txt
 
-
-# --- STAGE 2: Final Runtime Image ---
-# Use a clean, minimal runtime image
+# --- Stage 2: Runtime ---
 FROM python:3.11-slim
 
-# CRITICAL FIX: Ensure the system knows where to find Python binaries (like uvicorn)
 ENV PATH="/usr/local/bin:$PATH"
-
-# Set the working directory
 WORKDIR /app
 
-# Define the persistent directory for the Whisper model downloads
-ENV PERSISTENT_MODEL_ROOT=/app/.whisper_models
-RUN mkdir -p $PERSISTENT_MODEL_ROOT
+RUN apt-get update && apt-get install -y ffmpeg libsndfile1 && rm -rf /var/lib/apt/lists/*
 
-# --- CRITICAL FIX: Copy the Python packages AND the executables (like 'uvicorn') ---
-# Copy the installed Python packages (libraries)
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
-# NEW: Copy the executables (like uvicorn, which live in the bin directory)
 COPY --from=builder /usr/local/bin /usr/local/bin
 
-# Copy application files (The FastAPI code and environment variables)
 COPY main.py .
-COPY .env .
+COPY start.sh .
 
-# Expose the port the application will listen on
-EXPOSE 80
+EXPOSE 8000
 
-# The main command to start the application using Uvicorn
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
+CMD ["sh", "./start.sh"]
