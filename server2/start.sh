@@ -44,7 +44,8 @@ fi
 
 # --- 3. Start the Uvicorn Server ---
 echo "--- Starting Uvicorn on port $PORT ---"
-# --- FIX 2: Using python3 -m uvicorn for guaranteed execution ---
-# This remains the most reliable method. Since the SyntaxError is gone, 
-# this line should now execute the module correctly.
-/usr/local/bin/python3 -m uvicorn main:app --host 0.0.0.0 --port "$PORT"
+# --- FIX 2: Reverting to the simple 'uvicorn' command ---
+# Since the pre-download script now runs successfully, we trust that the PATH 
+# variable set in the Dockerfile is available. This is the cleaner, standard way.
+# This should resolve the "No module named uvicorn" error.
+uvicorn main:app --host 0.0.0.0 --port "$PORT"
