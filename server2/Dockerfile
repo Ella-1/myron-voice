@@ -9,12 +9,10 @@ ENV PYTHONUNBUFFERED 1
 # Create and set the working directory for all subsequent commands
 WORKDIR /app
 
-# Copy the requirements file (ensures the pip cache is busted only when requirements change)
-# The requirements.txt includes: fastapi, uvicorn[standard], openai-whisper, python-docx, python-dotenv
+# Copy the requirements file
 COPY requirements.txt .
 
-# Install dependencies. The --no-cache-dir ensures the final image is smaller.
-# Note: pip handles the 'uvicorn[standard]' format correctly.
+# Install dependencies. This includes uvicorn, fastapi, whisper, etc.
 RUN pip install --no-cache-dir -r requirements.txt
 
 
@@ -25,17 +23,17 @@ FROM python:3.11-slim
 # Set the working directory
 WORKDIR /app
 
-# Define the persistent directory for the Whisper model downloads (set to /app/.whisper_models)
-# This directory will be used by the Python code to save the model ONCE.
+# Define the persistent directory for the Whisper model downloads
 ENV PERSISTENT_MODEL_ROOT=/app/.whisper_models
 RUN mkdir -p $PERSISTENT_MODEL_ROOT
 
-# Copy only the installed Python packages (site-packages) from the builder stage
-# This keeps the image smaller than copying the entire project build context.
+# --- CRITICAL FIX: Copy the Python packages AND the executables (like 'uvicorn') ---
+# Copy the installed Python packages (libraries)
 COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+# NEW: Copy the executables (like uvicorn, which live in the bin directory)
+COPY --from=builder /usr/local/bin /usr/local/bin
 
 # Copy application files (The FastAPI code and environment variables)
-# UPDATED: We now look for main.py
 COPY main.py .
 COPY .env .
 
@@ -43,7 +41,4 @@ COPY .env .
 EXPOSE 80
 
 # The main command to start the application using Uvicorn
-# UPDATED: Uvicorn now targets main:app
-# 'main' is the file name, 'app' is the FastAPI object name inside the file.
-# --host 0.0.0.0 is mandatory for Docker networking.
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
