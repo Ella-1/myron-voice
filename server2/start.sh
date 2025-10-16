@@ -18,15 +18,18 @@ if [ ! -d "$MODEL_ROOT/$WHISPER_MODEL" ]; then
     
     # Run a Python script to trigger the download of the required model.
     # We use 'python -c' to perform a non-blocking download that saves to our persistent path.
-    python3 -c "
+    # Note: Use the absolute path for 'python3' as well, just to be safe!
+    /usr/local/bin/python3 -c "
 import whisper
 import os
 try:
     print(f'Attempting to download model {os.environ.get('WHISPER_MODEL', 'base')}...')
+    # Pass download_root to the function
     whisper.load_model(os.environ.get('WHISPER_MODEL', 'base'), download_root='$MODEL_ROOT')
     print('Model download complete.')
 except Exception as e:
     print(f'Error during pre-download: {e}')
+    # Exit the shell script if the download fails
     exit(1)
 "
     echo "--- Model ready ---"
@@ -36,6 +39,5 @@ fi
 
 # --- 3. Start the Uvicorn Server ---
 echo "--- Starting Uvicorn on port $PORT ---"
-# Use Uvicorn with gunicorn if you need multiple worker processes for CPU-heavy tasks.
-# For simplicity and debugging, we use a single Uvicorn process here.
-uvicorn main:app --host 0.0.0.0 --port "$PORT"
+# CRITICAL FIX: Use the absolute path for uvicorn to bypass PATH issues.
+/usr/local/bin/uvicorn main:app --host 0.0.0.0 --port "$PORT"
