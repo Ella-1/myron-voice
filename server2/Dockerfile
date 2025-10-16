@@ -20,6 +20,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Use a clean, minimal runtime image
 FROM python:3.11-slim
 
+# CRITICAL FIX: Ensure the system knows where to find Python binaries (like uvicorn)
+ENV PATH="/usr/local/bin:$PATH"
+
 # Set the working directory
 WORKDIR /app
 
