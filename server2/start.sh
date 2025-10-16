@@ -44,8 +44,7 @@ fi
 
 # --- 3. Start the Uvicorn Server ---
 echo "--- Starting Uvicorn on port $PORT ---"
-# --- FIX 2: Reverting to the simple 'uvicorn' command ---
-# Since the pre-download script now runs successfully, we trust that the PATH 
-# variable set in the Dockerfile is available. This is the cleaner, standard way.
-# This should resolve the "No module named uvicorn" error.
-uvicorn main:app --host 0.0.0.0 --port "$PORT"
+# --- FIX 2: Using the absolute executable path ---
+# This is the most reliable way. Since the Python download script above now runs 
+# cleanly, this explicit path should resolve the "not found" errors once and for all.
+/usr/local/bin/uvicorn main:app --host 0.0.0.0 --port "$PORT"
