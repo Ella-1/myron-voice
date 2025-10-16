@@ -17,13 +17,12 @@ if [ ! -d "$MODEL_ROOT/$WHISPER_MODEL" ]; then
     echo "--- Starting initial download of Whisper model: $WHISPER_MODEL ---"
     
     # Run a Python script to trigger the download of the required model.
-    # We use 'python -c' to perform a non-blocking download that saves to our persistent path.
-    # Note: Use the absolute path for 'python3' as well, just to be safe!
+    # Note: We must escape the single quotes inside the Python code (\') to fix the SyntaxError.
     /usr/local/bin/python3 -c "
 import whisper
 import os
 try:
-    print(f'Attempting to download model {os.environ.get('WHISPER_MODEL', 'base')}...')
+    print(f'Attempting to download model {os.environ.get(\'WHISPER_MODEL\', \'base\')}...')
     # Pass download_root to the function
     whisper.load_model(os.environ.get('WHISPER_MODEL', 'base'), download_root='$MODEL_ROOT')
     print('Model download complete.')
@@ -39,5 +38,6 @@ fi
 
 # --- 3. Start the Uvicorn Server ---
 echo "--- Starting Uvicorn on port $PORT ---"
-# CRITICAL FIX: Use the absolute path for uvicorn to bypass PATH issues.
-/usr/local/bin/uvicorn main:app --host 0.0.0.0 --port "$PORT"
+# CRITICAL FIX: Use 'python -m uvicorn' with the absolute path to python3.
+# This bypasses all PATH issues by running the module directly.
+/usr/local/bin/python3 -m uvicorn main:app --host 0.0.0.0 --port "$PORT"
