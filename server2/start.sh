@@ -44,7 +44,6 @@ fi
 
 # --- 3. Start the Uvicorn Server ---
 echo "--- Starting Uvicorn on port $PORT ---"
-# --- FIX 2: Using the absolute executable path ---
-# This is the most reliable way. Since the Python download script above now runs 
-# cleanly, this explicit path should resolve the "not found" errors once and for all.
-/usr/local/bin/uvicorn main:app --host 0.0.0.0 --port "$PORT"
+# --- FIX 2 (Final attempt): Changed absolute path to /usr/bin/uvicorn ---
+# This is a common secondary location for executables in minimal Linux images.
+/usr/bin/uvicorn main:app --host 0.0.0.0 --port "$PORT"
